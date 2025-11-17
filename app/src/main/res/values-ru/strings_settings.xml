@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="Settings_Header_Appearance">Внешний вид</string>
+        <string name="Setting_Username">Имя пользователя</string>
+        <string name="Setting_Background">Стиль фона</string>
+        <string name="Setting_Navbar_Items">Элементы панели навигации</string>
+        <string name="Setting_Home_Items">Элементы главного экрана</string>
+        <string name="Setting_MoreInfo">Показывать больше информации</string>
+        <string name="Setting_NowPlayingLyricsBlur">Эффект размытия текста</string>
+        <string name="Setting_NavidromeLogo">Показывать логотип Navidrome</string>
+        <string name="Setting_ProviderDividers">Показывать разделители провайдеров</string>
+        <string name="Setting_RefreshAnimation">Показывать анимацию обновления</string>
+        <string name="Setting_LyricsAnimationSpeed">Скорость анимации текста</string>
+    <string name="Settings_Header_Media">Источники медиа</string>
+    <string name="Settings_Header_Playback">Воспроизведение</string>
+        <string name="Setting_Transcoding">Макс. битрейт</string>
+        <string name="Setting_Transcoding_Wifi">Макс. битрейт (WiFi)</string>
+        <string name="Setting_Transcoding_Data">Макс. битрейт (Мобильные данные)</string>
+        <string name="Setting_Transcoding_Format">Формат транскодирования</string>
+        <string name="Setting_Scrobble_Percent">Мин. процент скробблинга</string>
+        <string name="Setting_Scrobble_Description">Только для Navidrome.</string>
+</resources>
+

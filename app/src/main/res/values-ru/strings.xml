@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name" translatable="false">Chora</string>
+    <!-- Navigation -->
+    <string name="songs">Песни</string>
+    <string name="Albums">Альбомы</string>
+    <string name="Artists">Исполнители</string>
+    <string name="settings">Настройки</string>
+    <string name="radios">Интернет-радио</string>
+    <string name="playlists">Плейлисты</string>
+</resources>
+

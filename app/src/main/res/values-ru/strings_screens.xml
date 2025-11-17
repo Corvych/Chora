@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home -->
+    <string name="welcome_text">Добро пожаловать</string>
+    <string name="recently_added">Недавно добавленные</string>
+    <string name="most_played">Самые проигрываемые</string>
+    <string name="recently_played">Недавно проигранные</string>
+    <string name="random_songs">Исследуйте вашу библиотеку</string>
+
+    <!-- Artist Details -->
+    <string name="Screen_Discography">Дискография</string>
+    <string name="Screen_Top_Songs">Популярные песни</string>
+
+    <!-- Album Details -->
+    <string name="Album_Disc_Number">Диск </string>
+</resources>
+
