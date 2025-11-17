@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +46,10 @@ fun HomeListsScreen(
         "most_played" -> R.string.most_played
         "random_songs" -> R.string.random_songs
         else -> R.string.recently_played
+    }
+
+    BackHandler {
+        navHostController.popBackStack()
     }
 
     Scaffold(

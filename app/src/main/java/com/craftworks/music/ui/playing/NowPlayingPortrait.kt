@@ -82,8 +82,8 @@ fun NowPlayingPortrait(
     val settingsManager = remember { AppearanceSettingsManager(context) }
     val showMoreInfo by settingsManager.showMoreInfoFlow.collectAsStateWithLifecycle(true)
     Column {
-        // Top padding
-        Spacer(Modifier.height(24.dp))
+        // Top padding - увеличен для опускания элементов ниже
+        Spacer(Modifier.height(64.dp))
 
         /* Album Cover + Lyrics */
         AnimatedContent(
@@ -128,84 +128,86 @@ fun NowPlayingPortrait(
             }
         }
 
+        Spacer(Modifier.height(16.dp))
 
-        Row(
-            Modifier
-                .padding(top = 8.dp)
-                .padding(horizontal = 32.dp)
+        /* Song Title + Artist - центрированы */
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            /* Song Title + Artist */
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top
-            ) {
+            Crossfade(
+                targetState = metadata?.title.toString(),
+                animationSpec = tween(durationMillis = 500),
+                label = "Animated Song Title"
+            ) { title ->
+                Text(
+                    text = title,
+                    fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                    fontWeight = FontWeight.SemiBold,
+                    color = iconTextColor,
+                    maxLines = 1, overflow = TextOverflow.Visible,
+                    softWrap = false,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .marqueeHorizontalFadingEdges(marqueeProvider = { Modifier.basicMarquee() })
+                )
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            Crossfade(
+                targetState = metadata?.artist.toString() + if (metadata?.recordingYear != 0 && metadata?.mediaType != MediaMetadata.MEDIA_TYPE_RADIO_STATION) " • " + metadata?.recordingYear else "",
+                animationSpec = tween(durationMillis = 500),
+                label = "Animated Artist"
+            ) { artistInfo ->
+                Text(
+                    text = artistInfo,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                    fontWeight = FontWeight.Normal,
+                    color = iconTextColor,
+                    maxLines = 1,
+                    softWrap = false,
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .marqueeHorizontalFadingEdges(marqueeProvider = { Modifier.basicMarquee() })
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            if (showMoreInfo && metadata?.mediaType != MediaMetadata.MEDIA_TYPE_RADIO_STATION) {
                 Crossfade(
-                    targetState = metadata?.title.toString(),
-                    animationSpec = tween(durationMillis = 500),
-                    label = "Animated Song Title"
-                ) { title ->
-                    Text(
-                        text = title,
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                        color = iconTextColor,
-                        maxLines = 1, overflow = TextOverflow.Visible,
-                        softWrap = false,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .marqueeHorizontalFadingEdges(marqueeProvider = { Modifier.basicMarquee() })
-                    )
-                }
-
-                Crossfade(
-                    targetState = metadata?.artist.toString() + if (metadata?.recordingYear != 0 && metadata?.mediaType != MediaMetadata.MEDIA_TYPE_RADIO_STATION) " • " + metadata?.recordingYear else "",
-                    animationSpec = tween(durationMillis = 500),
-                    label = "Animated Artist"
-                ) { artistInfo ->
-                    Text(
-                        text = artistInfo,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.Normal,
-                        color = iconTextColor,
-                        maxLines = 1,
-                        softWrap = false,
-                        textAlign = TextAlign.Start,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .marqueeHorizontalFadingEdges(marqueeProvider = { Modifier.basicMarquee() })
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                if (showMoreInfo && metadata?.mediaType != MediaMetadata.MEDIA_TYPE_RADIO_STATION) {
-                    Crossfade(
-                        targetState = "${
-                            metadata?.extras?.getString("format")?.uppercase()
-                        } • ${metadata?.extras?.getLong("bitrate")} • ${
-                            if (metadata?.extras?.getString("navidromeID")
-                                    ?.startsWith("Local_") == true
-                            )
-                                stringResource(R.string.Source_Local)
-                            else
-                                stringResource(R.string.Source_Navidrome)
-                        } ",
-                    ) { moreInfo ->
-                        Text(
-                            text = moreInfo,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Light,
-                            color = iconTextColor.copy(alpha = 0.5f),
-                            maxLines = 1,
-                            textAlign = TextAlign.Start
+                    targetState = "${
+                        metadata?.extras?.getString("format")?.uppercase()
+                    } • ${metadata?.extras?.getLong("bitrate")} • ${
+                        if (metadata?.extras?.getString("navidromeID")
+                                ?.startsWith("Local_") == true
                         )
-                    }
+                            stringResource(R.string.Source_Local)
+                        else
+                            stringResource(R.string.Source_Navidrome)
+                    } ",
+                ) { moreInfo ->
+                    Text(
+                        text = moreInfo,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Light,
+                        color = iconTextColor.copy(alpha = 0.5f),
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
 
         if (metadata?.mediaType != MediaMetadata.MEDIA_TYPE_RADIO_STATION)
             PlaybackProgressSlider(iconTextColor, mediaController)

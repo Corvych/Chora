@@ -167,15 +167,22 @@ class MainActivity : ComponentActivity() {
                     label = "sheetPeekAnimation"
                 )
 
-                val backCallback = object : OnBackPressedCallback(false) {
-                    override fun handleOnBackPressed() {
-                        coroutineScope.launch {
-                            scaffoldState.bottomSheetState.partialExpand()
+                val backCallback = remember {
+                    object : OnBackPressedCallback(false) {
+                        override fun handleOnBackPressed() {
+                            coroutineScope.launch {
+                                scaffoldState.bottomSheetState.partialExpand()
+                            }
                         }
                     }
                 }
 
-                onBackPressedDispatcher.addCallback(this, backCallback)
+                DisposableEffect(Unit) {
+                    onBackPressedDispatcher.addCallback(backCallback)
+                    onDispose {
+                        backCallback.remove()
+                    }
+                }
 
 
                 Scaffold(
@@ -331,6 +338,19 @@ fun AnimatedBottomNavBar(
         )
     ).value
 
+    // Function to get string resource ID from screen route
+    fun getNavItemTitleRes(route: String): Int {
+        return when (route) {
+            "home_screen" -> R.string.home
+            "album_screen" -> R.string.Albums
+            "songs_screen" -> R.string.songs
+            "artists_screen" -> R.string.Artists
+            "radio_screen" -> R.string.radios
+            "playlist_screen" -> R.string.playlists
+            else -> R.string.home
+        }
+    }
+
     if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
         val expanded by remember { derivedStateOf { scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded } }
 
@@ -357,10 +377,10 @@ fun AnimatedBottomNavBar(
                             if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) scaffoldState.bottomSheetState.partialExpand()
                         }
                     },
-                    label = { Text(text = item.title) },
+                    label = { Text(text = stringResource(getNavItemTitleRes(item.screenRoute))) },
                     alwaysShowLabel = false,
                     icon = {
-                        Icon(ImageVector.vectorResource(item.icon), contentDescription = item.title)
+                        Icon(ImageVector.vectorResource(item.icon), contentDescription = stringResource(getNavItemTitleRes(item.screenRoute)))
                     })
             }
         }
@@ -390,10 +410,10 @@ fun AnimatedBottomNavBar(
                                 if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) scaffoldState.bottomSheetState.partialExpand()
                             }
                         },
-                        label = { Text(text = item.title) },
+                        label = { Text(text = stringResource(getNavItemTitleRes(item.screenRoute))) },
                         alwaysShowLabel = false,
                         icon = {
-                            Icon(ImageVector.vectorResource(item.icon), contentDescription = item.title)
+                            Icon(ImageVector.vectorResource(item.icon), contentDescription = stringResource(getNavItemTitleRes(item.screenRoute)))
                         },
                     )
                 }

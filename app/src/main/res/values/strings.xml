@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Chora</string>
     <!-- Navigation -->
+    <string name="home">Home</string>
     <string name="songs">Songs</string>
     <string name="Albums">Albums</string>
     <string name="Artists">Artists</string>

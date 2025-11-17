@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Chora</string>
     <!-- Navigation -->
+    <string name="home">Главная</string>
     <string name="songs">Песни</string>
     <string name="Albums">Альбомы</string>
     <string name="Artists">Исполнители</string>

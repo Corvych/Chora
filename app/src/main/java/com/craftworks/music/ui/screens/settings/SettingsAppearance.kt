@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -84,6 +85,12 @@ fun S_AppearanceScreen(navHostController: NavHostController = rememberNavControl
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+
+    BackHandler {
+        navHostController.navigate(Screen.Setting.route) {
+            launchSingleTop = true
+        }
+    }
 
     val focusRequester = remember { FocusRequester() }
 

@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,6 +57,12 @@ import kotlin.math.roundToInt
 @Composable
 fun S_PlaybackScreen(navHostController: NavHostController = rememberNavController()) {
     val context = LocalContext.current
+
+    BackHandler {
+        navHostController.navigate(Screen.Setting.route) {
+            launchSingleTop = true
+        }
+    }
 
     var showWifiTranscodingDialog by remember { mutableStateOf(false) }
     var showDataTranscodingDialog by remember { mutableStateOf(false) }

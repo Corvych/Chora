@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +58,12 @@ import com.craftworks.music.ui.elements.dialogs.dialogFocusable
 @Preview(showSystemUi = false, showBackground = true)
 fun S_ProviderScreen(navHostController: NavHostController = rememberNavController()) {
     val context = LocalContext.current.applicationContext
+
+    BackHandler {
+        navHostController.navigate(Screen.Setting.route) {
+            launchSingleTop = true
+        }
+    }
 
     var showNavidromeServerDialog by remember { mutableStateOf(false) }
 

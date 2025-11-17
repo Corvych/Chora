@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +46,15 @@ import com.craftworks.music.data.model.Screen
 )
 @Composable
 fun SettingScreen(navHostController: NavHostController = rememberNavController()) {
+    BackHandler {
+        if (!navHostController.popBackStack()) {
+            navHostController.navigate(Screen.Home.route) {
+                launchSingleTop = true
+                popUpTo(Screen.Home.route) { inclusive = false }
+            }
+        }
+    }
+    
     Column(modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.surfaceContainer)

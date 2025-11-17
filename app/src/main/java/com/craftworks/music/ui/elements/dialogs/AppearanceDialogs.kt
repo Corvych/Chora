@@ -330,8 +330,19 @@ fun NavbarItemsDialog(setShowDialog: (Boolean) -> Unit) {
                             modifier = Modifier
                                 .height(48.dp)
                         ) {
+                            val navItemTitleRes = when (navItem.screenRoute) {
+                                "home_screen" -> R.string.home
+                                "album_screen" -> R.string.Albums
+                                "songs_screen" -> R.string.songs
+                                "artists_screen" -> R.string.Artists
+                                "radio_screen" -> R.string.radios
+                                "playlist_screen" -> R.string.playlists
+                                else -> R.string.home
+                            }
+                            val navItemTitle = stringResource(navItemTitleRes)
+                            
                             Checkbox(
-                                enabled = navItem.title != "Home",
+                                enabled = navItem.screenRoute != "home_screen",
                                 checked = bottomNavigationItems[index].enabled,
                                 onCheckedChange = {
                                     coroutineScope.launch {
@@ -340,11 +351,13 @@ fun NavbarItemsDialog(setShowDialog: (Boolean) -> Unit) {
                                     }
                                 },
                                 modifier = Modifier
-                                    .semantics { contentDescription = navItem.title }
+                                    .semantics { 
+                                        contentDescription = navItemTitle
+                                    }
                                     .bounceClick()
                             )
                             Text(
-                                text = navItem.title,
+                                text = navItemTitle,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = MaterialTheme.typography.titleMedium.fontSize,
                                 color = MaterialTheme.colorScheme.onBackground,

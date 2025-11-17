@@ -10,6 +10,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -32,16 +34,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -215,7 +225,8 @@ fun LyricsView(
                     useBlur = useBlur,
                     visibleItemsInfo = visibleItemsInfo,
                     color = color,
-                    lyricsAnimationSpeed = lyricsAnimationSpeed
+                    lyricsAnimationSpeed = lyricsAnimationSpeed,
+                    paddingValues = paddingValues
                 ) {
                     mediaController?.seekTo(lyric.timestamp.toLong())
                     currentPosition.intValue = lyric.timestamp
@@ -237,7 +248,7 @@ fun LyricsView(
                 Text(
                     text = lyrics[0].content,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     color = color,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                     textAlign = TextAlign.Center,
@@ -260,8 +271,13 @@ fun SyncedLyricItem(
     visibleItemsInfo: List<LazyListItemInfo>,
     color: Color,
     lyricsAnimationSpeed: Int = 1200,
+    paddingValues: PaddingValues = PaddingValues(),
     onClick: () -> Unit = {},
 ) {
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+    val density = LocalDensity.current
+    
     val lyricAlpha: Float by animateFloatAsState(
         targetValue = if (currentLyricIndex == index) 1f else 0.5f,
         label = "Current Lyric Alpha",
@@ -277,34 +293,145 @@ fun SyncedLyricItem(
     )
 
     val scale by animateFloatAsState(
-        targetValue = if (currentLyricIndex == index) 1f else 0.9f,
+        targetValue = if (currentLyricIndex == index) 1.2f else 0.85f,
         label = "Lyric Scale Animation",
         animationSpec = tween(lyricsAnimationSpeed, 0, FastOutSlowInEasing)
     )
 
+    // Разбиваем текст на строки с учетом масштабирования и ширины экрана
+    // Используем максимальный масштаб для расчета, чтобы строки не менялись при переключении
+    val maxScale = 1.2f // Максимальный масштаб для активной строки
+    val fontSize = MaterialTheme.typography.titleLarge.fontSize.value
+    val screenWidthDpValue = configuration.screenWidthDp
+    val densityValue = density.density
+    val fontSizePx = with(density) { fontSize.sp.toPx() }
+    
+    // Вычисляем доступную ширину с учетом padding и максимального масштабирования
+    // В портретной ориентации используем всю ширину экрана, в ландшафтной - с учетом padding от LyricsView и самого элемента
+    val layoutDirection = LocalLayoutDirection.current
+    val paddingValuesHorizontalPx = with(density) { 
+        paddingValues.calculateLeftPadding(layoutDirection).toPx() + paddingValues.calculateRightPadding(layoutDirection).toPx()
+    }
+    val itemHorizontalPaddingDp = if (isPortrait) 0 else 16
+    val itemHorizontalPaddingPx = itemHorizontalPaddingDp * densityValue
+    val totalHorizontalPaddingPx = paddingValuesHorizontalPx + itemHorizontalPaddingPx
+    val screenWidthPx = screenWidthDpValue * densityValue
+    // Используем максимальный масштаб для расчета, чтобы строки не менялись
+    val availableWidthPx = (screenWidthPx - totalHorizontalPaddingPx) / maxScale
+    
+    // Вычисляем строки текста с учетом всех параметров
+    // Не зависим от isActive, чтобы строки не пересчитывались при переключении
+    val textLines = remember(lyric.content, availableWidthPx, fontSizePx) {
+        if (lyric.content.isEmpty()) {
+            listOf("• • •")
+        } else {
+            // Используем максимальную жирность для расчета, чтобы строки не менялись
+            val fontWeight = FontWeight.Black
+            breakTextIntoLines(lyric.content, availableWidthPx, fontSizePx, fontWeight)
+        }
+    }
+
     Box(modifier = Modifier
-        .padding(vertical = 12.dp)
-        .heightIn(min = 48.dp)
+        .padding(vertical = 16.dp, horizontal = if (isPortrait) 0.dp else 16.dp)
+        .fillMaxWidth()
+        .clipToBounds()
         .focusable(false)
         .graphicsLayer {
             scaleX = scale
             scaleY = scale
+            clip = true
         }
         .blur(lyricBlur)
         .clickable {
             onClick()
         }, contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = if (lyric.content == "") "• • •" else lyric.content,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = color.copy(lyricAlpha),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            lineHeight = 32.sp
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            textLines.forEach { line ->
+                Text(
+                    text = line,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = if (currentLyricIndex == index) FontWeight.Black else FontWeight.Bold,
+                    color = color.copy(lyricAlpha),
+                    modifier = Modifier.wrapContentWidth(),
+                    textAlign = TextAlign.Center,
+                    lineHeight = 36.sp
+                )
+            }
+        }
     }
+}
+
+// Функция для разбиения текста на строки с учетом ширины
+@Stable
+private fun breakTextIntoLines(
+    text: String,
+    maxWidthPx: Float,
+    fontSizePx: Float,
+    fontWeight: FontWeight
+): List<String> {
+    if (text.isEmpty()) return listOf("• • •")
+    
+    // Более точная оценка ширины символа с учетом жирности шрифта
+    // Для жирного шрифта (Black/Bold) коэффициент больше
+    val charWidthMultiplier = when {
+        fontWeight == FontWeight.Black || fontWeight == FontWeight.Bold -> 0.65f
+        fontWeight == FontWeight.ExtraBold -> 0.63f
+        fontWeight == FontWeight.SemiBold -> 0.61f
+        else -> 0.58f
+    }
+    val avgCharWidth = fontSizePx * charWidthMultiplier
+    val spaceWidth = avgCharWidth * 0.3f // Ширина пробела меньше символа
+    
+    // Вычисляем максимальное количество символов на строку
+    val maxCharsPerLine = ((maxWidthPx - spaceWidth) / avgCharWidth).toInt().coerceAtLeast(1)
+    
+    val words = text.split(" ")
+    val lines = mutableListOf<String>()
+    var currentLine = ""
+    var currentLineLength = 0
+    
+    for (word in words) {
+        val wordLength = word.length
+        val spaceLength = if (currentLine.isNotEmpty()) 1 else 0
+        val testLineLength = currentLineLength + spaceLength + wordLength
+        
+        if (testLineLength <= maxCharsPerLine) {
+            // Слово помещается в текущую строку
+            currentLine = if (currentLine.isEmpty()) word else "$currentLine $word"
+            currentLineLength = testLineLength
+        } else {
+            // Слово не помещается, начинаем новую строку
+            if (currentLine.isNotEmpty()) {
+                lines.add(currentLine)
+            }
+            
+            // Если слово само по себе длиннее строки, разбиваем его
+            if (wordLength > maxCharsPerLine) {
+                var remainingWord = word
+                while (remainingWord.length > maxCharsPerLine) {
+                    lines.add(remainingWord.take(maxCharsPerLine))
+                    remainingWord = remainingWord.drop(maxCharsPerLine)
+                }
+                currentLine = remainingWord
+                currentLineLength = remainingWord.length
+            } else {
+                currentLine = word
+                currentLineLength = wordLength
+            }
+        }
+    }
+    
+    if (currentLine.isNotEmpty()) {
+        lines.add(currentLine)
+    }
+    
+    return if (lines.isEmpty()) listOf(text) else lines
 }
 
 // Calculate the amount of blur for each lyrics item depending on it's distance to the current lyric.
